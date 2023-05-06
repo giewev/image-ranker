@@ -1,1 +1,1 @@
-web: gunicorn app:elo_comparison_server
+web: gunicorn elo_comparison_server:elo_comparison_server
