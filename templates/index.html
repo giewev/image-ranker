@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        font-family: Arial, sans-serif;
+      }
+
+      h1 {
+        margin-bottom: 1rem;
+      }
+
+      .card-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+      }
+
+      .card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 45%;
+      }
+
+      img {
+        cursor: pointer;
+        max-width: 100%;
+        max-height: 80vh;
+      }
+
+      .elo {
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+      }
+    </style>
+    <title>Elo Comparison Server</title>
+  </head>
+  <body>
+    <h1>Which is more Milfy?</h1>
+    <div class="card-container">
+      {% for card in cards %}
+        <form method="post" class="card">
+          <h2>{{ card.name }}</h2>
+          <input type="hidden" name="winner_id" value="{{ card.id }}">
+          <input type="hidden" name="loser_id" value="{{ cards[0].id if cards[1].id == card.id else cards[1].id }}">
+          <button type="submit" style="border: none; background: none; padding: 0;">
+            <img src="{{ card.art_url }}" alt="{{ card.name }}">
+          </button>
+          <p class="elo">Elo: {{ card.elo }}</p>
+        </form>
+      {% endfor %}
+    </div>
+  </body>
+</html>
