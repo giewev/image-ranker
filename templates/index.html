@@ -49,16 +49,42 @@
     <h1>Which is more Milfy?</h1>
     <div class="card-container">
       {% for card in cards %}
-        <form method="post" class="card">
-          <h2>{{ card.name }}</h2>
-          <input type="hidden" name="winner_id" value="{{ card.id }}">
-          <input type="hidden" name="loser_id" value="{{ cards[0].id if cards[1].id == card.id else cards[1].id }}">
-          <button type="submit" style="border: none; background: none; padding: 0;">
-            <img src="{{ card.art_url }}" alt="{{ card.name }}">
-          </button>
-          <p class="elo">Elo: {{ card.elo }}</p>
-        </form>
+      <div class="card">
+        <h3>{{ card['name'] }}</h3>
+        <img src="{{ card['art_url'] }}" onclick="submitVote('{{ card['id'] }}', '{{ cards[1 if loop.index0 == 0 else 0]['id'] }}', false)">
+        <p>Elo: {{ card['elo'] }}</p>
+        <!-- Add the report button below the image -->
+        <button onclick="submitVote('{{ card['id'] }}', '{{ cards[1 if loop.index0 == 0 else 0]['id'] }}', true)">Report</button>
+      </div>
       {% endfor %}
-    </div>
-  </body>
+
+      <script>
+        function submitVote(winnerId, loserId, report) {
+          let form = document.createElement('form');
+          form.method = 'POST';
+          form.action = '/';
+
+          let winnerInput = document.createElement('input');
+          winnerInput.type = 'hidden';
+          winnerInput.name = 'winner_id';
+          winnerInput.value = winnerId;
+          form.appendChild(winnerInput);
+
+          let loserInput = document.createElement('input');
+          loserInput.type = 'hidden';
+          loserInput.name = 'loser_id';
+          loserInput.value = loserId;
+          form.appendChild(loserInput);
+
+          // Add the report input field to the form
+          let reportInput = document.createElement('input');
+          reportInput.type = 'hidden';
+          reportInput.name = 'report';
+          reportInput.value = report;
+          form.appendChild(reportInput);
+
+          document.body.appendChild(form);
+          form.submit();
+        }
+      </script>
 </html>

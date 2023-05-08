@@ -17,7 +17,7 @@ def get_random_cards():
     return cards
 
 
-def update_elo(winner_id, loser_id, k=32):
+def update_elo(winner_id, loser_id, k=64, report=False):
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
 
@@ -29,14 +29,18 @@ def update_elo(winner_id, loser_id, k=32):
     expected_outcome_winner = 1 / (1 + 10 ** ((loser_elo - winner_elo) / 400))
     expected_outcome_loser = 1 / (1 + 10 ** ((winner_elo - loser_elo) / 400))
 
+    if report:
+        k *= 2
+
     winner_new_elo = winner_elo + k * (1 - expected_outcome_winner)
     loser_new_elo = loser_elo + k * (0 - expected_outcome_loser)
 
-    c.execute('''
-        UPDATE cards
-        SET elo=?, games_played=games_played+1, wins=wins+1
-        WHERE id=?
-    ''', (winner_new_elo, winner_id))
+    if not report:
+        c.execute('''
+            UPDATE cards
+            SET elo=?, games_played=games_played+1, wins=wins+1
+            WHERE id=?
+        ''', (winner_new_elo, winner_id))
 
     c.execute('''
         UPDATE cards
@@ -53,7 +57,8 @@ def index():
     if request.method == 'POST':
         winner_id = request.form['winner_id']
         loser_id = request.form['loser_id']
-        update_elo(winner_id, loser_id)
+        report = request.form.get('report') == 'true'
+        update_elo(winner_id, loser_id, report=report)
         return redirect(url_for('index'))
 
     cards = get_random_cards()
