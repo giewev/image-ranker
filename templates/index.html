@@ -54,7 +54,7 @@
         <img src="{{ card['art_url'] }}" onclick="submitVote('{{ card['id'] }}', '{{ cards[1 if loop.index0 == 0 else 0]['id'] }}', false)">
         <p>Elo: {{ card['elo'] }}</p>
         <!-- Add the report button below the image -->
-        <button onclick="submitVote('{{ card['id'] }}', '{{ cards[1 if loop.index0 == 0 else 0]['id'] }}', true)">Report</button>
+        <button onclick="submitVote('{{ card['id'] }}', '{{ cards[1 if loop.index0 == 0 else 0]['id'] }}', true)">Not a woman</button>
       </div>
       {% endfor %}
 
