@@ -21,6 +21,10 @@ def update_elo(winner_id, loser_id, k=64, report=False):
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
 
+    if report:
+        k *= 2
+        winner_id, loser_id = loser_id, winner_id
+
     c.execute('SELECT elo FROM cards WHERE id=?', (winner_id,))
     winner_elo = c.fetchone()[0]
     c.execute('SELECT elo FROM cards WHERE id=?', (loser_id,))
@@ -28,9 +32,6 @@ def update_elo(winner_id, loser_id, k=64, report=False):
 
     expected_outcome_winner = 1 / (1 + 10 ** ((loser_elo - winner_elo) / 400))
     expected_outcome_loser = 1 / (1 + 10 ** ((winner_elo - loser_elo) / 400))
-
-    if report:
-        k *= 2
 
     winner_new_elo = winner_elo + k * (1 - expected_outcome_winner)
     loser_new_elo = loser_elo + k * (0 - expected_outcome_loser)
