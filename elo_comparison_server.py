@@ -78,6 +78,7 @@ def low_rank(page=1):
     c.execute('''
         SELECT id, name, art_url, elo, games_played 
         FROM cards
+        WHERE invalid=0 
         ORDER BY elo ASC
         LIMIT ? OFFSET ?
     ''', (images_per_page, (page - 1) * images_per_page))
@@ -94,6 +95,15 @@ def flag(image_id):
     conn.commit()
     conn.close()
     return redirect(request.referrer)
+
+@app.route('/invalid', methods=['GET'])
+def invalid():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute('SELECT id, name, art_url, elo, games_played FROM cards WHERE invalid=1')
+    cards = [{'id': row[0], 'name': row[1], 'art_url': row[2], 'elo':row[3], 'games_played':row[4]} for row in c.fetchall()]
+    conn.close()
+    return render_template('./invalid.html', cards=cards)
 
 if __name__ == '__main__':
     app.run(debug=True)

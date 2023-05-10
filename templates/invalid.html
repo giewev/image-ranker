@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+    <body>
+    {% block content %}
+    <h1>Invalid Images</h1>
+    <div class="gallery" style="display: flex; flex-wrap: wrap;">
+        {% for card in cards %}
+        <div class="card" style="flex: 1 0 21%; margin: 1%;">
+            <img src="{{ card.art_url }}" alt="{{ card.name }}" style="width: 100%;">
+            <p>{{ card.name }}</p>
+            <p>Elo rating: {{ card.elo }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endblock %}
+    </body>
+</html>
