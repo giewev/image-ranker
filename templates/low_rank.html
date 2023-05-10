@@ -3,14 +3,15 @@
     <body>
     {% block content %}
     <h1>Lowest Ranking Images</h1>
-    <div class="gallery">
+    <div class="gallery" style="display: flex; flex-wrap: wrap;">
         {% for card in cards %}
-        <div class="card">
-            <img src="{{ card.art_url }}" alt="{{ card.name }}">
+        <div class="card" style="flex: 1 0 21%; margin: 1%;">
+            <img src="{{ card.art_url }}" alt="{{ card.name }}" style="width: 100%;">
             <p>{{ card.name }}</p>
             <p>Elo rating: {{ card.elo }}</p>
-            <form method="post" action="{{ url_for('flag', image_id=card.id) }}">
-                <button type="submit">Flag</button>
+            <form action="{{ url_for('flag_invalid') }}" method="post">
+                <input type="hidden" name="card_id" value="{{ card.id }}">
+                <button type="submit">Report</button>
             </form>
         </div>
         {% endfor %}
