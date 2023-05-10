@@ -1,8 +1,22 @@
 <!doctype html>
 <html lang="en">
+    <head>
+        <style>
+            .gallery {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(calc(22%), 1fr));
+                gap: 10px;
+            }
+
+            .card img {
+                width: 100%;
+                height: auto;
+            }
+        </style>
+    </head>
     <body>
     {% block content %}
-    <h1>The Mega Mommy Milfs</h1>
+    <h1>Top Ranking Images</h1>
     <div class="gallery">
         {% for card in cards %}
         <div class="card">
