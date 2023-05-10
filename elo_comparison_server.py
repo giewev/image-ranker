@@ -87,7 +87,7 @@ def low_rank(page=1):
     conn.close()
     return render_template('low_rank.html', cards=cards, page=page, total_pages=total_pages)
 
-@app.route('/flag_invalid/<string:image_id>', methods=['POST'])
+@app.route('/flag/<string:image_id>', methods=['POST'])
 def flag(image_id):
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()

@@ -9,7 +9,7 @@
             <img src="{{ card.art_url }}" alt="{{ card.name }}" style="width: 100%;">
             <p>{{ card.name }}</p>
             <p>Elo rating: {{ card.elo }}</p>
-            <form action="{{ url_for('flag_invalid', image_id=card.id) }}" method="post">
+            <form action="{{ url_for('flag', image_id=card.id) }}" method="post">
                 <button type="submit">Report</button>
             </form>
         </div>
