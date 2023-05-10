@@ -11,7 +11,7 @@ app = Flask(__name__)
 def get_random_cards():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute('SELECT id, name, art_url, elo, games_played FROM cards ORDER BY games_played, RANDOM() LIMIT 2')
+    c.execute('SELECT id, name, art_url, elo, games_played FROM cards WHERE invalid=0 ORDER BY games_played, RANDOM() LIMIT 2')
     cards = [{'id': row[0], 'name': row[1], 'art_url': row[2], 'elo':row[3], 'games_played':row[4]} for row in c.fetchall()]
     conn.close()
     return cards
@@ -65,6 +65,35 @@ def index():
     cards = get_random_cards()
     return render_template('./index.html', cards=cards)
 
+@app.route('/low_rank/', methods=['GET'])
+@app.route('/low_rank/<int:page>', methods=['GET'])
+def low_rank(page=1):
+    images_per_page = 10
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute('SELECT COUNT(*) FROM cards')
+    total_images = c.fetchone()[0]
+    total_pages = (total_images + images_per_page - 1) // images_per_page  # round up division
+
+    c.execute('''
+        SELECT id, name, art_url, elo, games_played 
+        FROM cards
+        ORDER BY elo ASC
+        LIMIT ? OFFSET ?
+    ''', (images_per_page, (page - 1) * images_per_page))
+    cards = [{'id': row[0], 'name': row[1], 'art_url': row[2], 'elo': row[3], 'games_played': row[4]} for row in c.fetchall()]
+
+    conn.close()
+    return render_template('low_rank.html', cards=cards, page=page, total_pages=total_pages)
+
+@app.route('/flag/<string:image_id>', methods=['POST'])
+def flag(image_id):
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute('UPDATE cards SET invalid=1 WHERE id=?', (image_id,))
+    conn.commit()
+    conn.close()
+    return redirect(request.referrer)
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+    <body>
+    {% block content %}
+    <h1>Lowest Ranking Images</h1>
+    <div class="gallery">
+        {% for card in cards %}
+        <div class="card">
+            <img src="{{ card.art_url }}" alt="{{ card.name }}">
+            <p>{{ card.name }}</p>
+            <p>Elo rating: {{ card.elo }}</p>
+            <form method="post" action="{{ url_for('flag', image_id=card.id) }}">
+                <button type="submit">Flag</button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="pagination">
+        {% if page > 1 %}
+        <a href="{{ url_for('low_rank', page=page-1) }}">Previous</a>
+        {% endif %}
+        {% if page < total_pages %}
+        <a href="{{ url_for('low_rank', page=page+1) }}">Next</a>
+        {% endif %}
+    </div>
+    {% endblock %}
+    </body>
+</html>
