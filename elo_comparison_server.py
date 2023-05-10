@@ -123,5 +123,14 @@ def invalid():
     conn.close()
     return render_template('./invalid.html', cards=cards)
 
+@app.route('/top', methods=['GET'])
+def top():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute('SELECT id, name, art_url, elo FROM cards WHERE invalid=0 ORDER BY elo DESC LIMIT 12')
+    cards = [{'id': row[0], 'name': row[1], 'art_url': row[2], 'elo':row[3]} for row in c.fetchall()]
+    conn.close()
+    return render_template('./top.html', cards=cards)
+    
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+    <body>
+    {% block content %}
+    <h1>The Mega Mommy Milfs</h1>
+    <div class="gallery">
+        {% for card in cards %}
+        <div class="card">
+            <img src="{{ card.art_url }}" alt="{{ card.name }}">
+            <p>{{ card.name }}</p>
+            <p>Elo rating: {{ card.elo }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endblock %}
+    </body>
+</html>
