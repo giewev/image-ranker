@@ -15,7 +15,7 @@ def get_random_cards(randomness=100):
         SELECT id, name, art_url, elo, games_played 
         FROM cards 
         WHERE invalid=0 
-        ORDER BY ((RANDOM() / CAST(-9223372036854775808 AS REAL)*?) + (1/(games_played + 0.01))/5 + (elo/1200)) desc
+        ORDER BY ((RANDOM() / CAST(-9223372036854775808 AS REAL)*?) + (1/(games_played + 0.01))/5) desc
         LIMIT 1'''
         , (randomness,))
     row = c.fetchone() 
