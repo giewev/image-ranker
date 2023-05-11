@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <!-- Include Chart.js -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    </head>
+    <body>
+        <!-- Create a canvas element where the chart will be rendered -->
+        <canvas id="gamesPlayedChart"></canvas>
+        <canvas id="eloRatingsChart"></canvas>
+
+        <script>
+            // Get the context of the canvas element
+            var ctx1 = document.getElementById('gamesPlayedChart').getContext('2d');
+            var ctx2 = document.getElementById('eloRatingsChart').getContext('2d');
+
+            // Create the chart
+            new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: {{ games_played_labels | tojson | safe }},
+                    datasets: [{
+                        label: '# of Games Played',
+                        data: {{ games_played_data | tojson | safe }},
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: {{ elo_labels | tojson | safe }},
+                    datasets: [{
+                        label: 'ELO Ratings',
+                        data: {{ elo_data | tojson | safe }},
+                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>

@@ -131,6 +131,32 @@ def top():
     cards = [{'id': row[0], 'name': row[1], 'art_url': row[2], 'elo':row[3]} for row in c.fetchall()]
     conn.close()
     return render_template('./top.html', cards=cards)
-    
+
+@app.route('/stats', methods=['GET'])
+def stats():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+
+    # Query for games played distribution
+    c.execute('SELECT games_played, COUNT(*) FROM cards GROUP BY games_played')
+    games_played_data = c.fetchall()
+    games_played_labels = [str(row[0]) for row in games_played_data]
+    games_played_data = [row[1] for row in games_played_data]
+
+    # Query for elo rating distribution
+    c.execute('SELECT elo, COUNT(*) FROM cards GROUP BY elo')
+    elo_data = c.fetchall()
+    elo_labels = [str(row[0]) for row in elo_data]
+    elo_data = [row[1] for row in elo_data]
+
+    conn.close()
+
+    return render_template('./stats.html', 
+                           games_played_labels=games_played_labels, 
+                           games_played_data=games_played_data,
+                           elo_labels=elo_labels,
+                           elo_data=elo_data)
+
+
 if __name__ == '__main__':
     app.run(debug=True)
