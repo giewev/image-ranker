@@ -21,16 +21,23 @@ def get_random_cards(randomness=100):
     row = c.fetchone() 
     first_card = {'id': row[0], 'name': row[1], 'art_url': row[2], 'elo':round(row[3], 1), 'games_played':row[4]}
 
-    c.execute('''
-        SELECT id, name, art_url, elo, games_played 
-        FROM cards 
-        WHERE 1=1
-            AND invalid=0 
-            AND id != ?
-        ORDER BY ((RANDOM() / CAST(-9223372036854775808 AS REAL)*?) + (1/(games_played + 0.01))/5 - (abs(elo-?) / elo)) desc
-        LIMIT 1'''
-    , (first_card['id'], first_card['elo'], randomness))
-    row = c.fetchone() 
+    row = None
+    max_elo_distance = 25
+    while row is None:
+        c.execute('''
+            SELECT id, name, art_url, elo, games_played 
+            FROM cards 
+            WHERE 1=1
+                AND invalid=0 
+                AND id != ?
+                AND abs(elo - ?) < ?
+            ORDER BY (RANDOM() / CAST(-9223372036854775808 AS REAL)) desc
+            LIMIT 1'''
+        , (first_card['id'], first_card['elo'], max_elo_distance))
+        row = c.fetchone() 
+        max_elo_distance += 50
+
+
     second_card = {'id': row[0], 'name': row[1], 'art_url': row[2], 'elo':round(row[3], 1), 'games_played':row[4]}
     conn.close()
     return [first_card, second_card]
@@ -138,13 +145,13 @@ def stats():
     c = conn.cursor()
 
     # Query for games played distribution
-    c.execute('SELECT games_played, COUNT(*) FROM cards GROUP BY games_played')
+    c.execute('SELECT games_played, COUNT(*) FROM cards where invalid = 0 GROUP BY games_played')
     games_played_data = c.fetchall()
     games_played_labels = [str(row[0]) for row in games_played_data]
     games_played_data = [row[1] for row in games_played_data]
 
     # Query for elo rating distribution
-    c.execute('SELECT ROUND(elo / 50) * 50 AS elo_bucket, COUNT(*) FROM cards GROUP BY elo_bucket')
+    c.execute('SELECT ROUND(elo / 50) * 50 AS elo_bucket, COUNT(*) FROM cards where invalid = 0 GROUP BY elo_bucket')
     elo_data = c.fetchall()
     elo_labels = [str(row[0]) for row in elo_data]
     elo_data = [row[1] for row in elo_data]
