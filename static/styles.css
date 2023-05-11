@@ -59,9 +59,20 @@
 /* Styles for the stats tables */
 .side-by-side {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     margin-bottom: 20px;
 }
+
+.side-by-side .chart-container {
+    flex: 1;
+    text-align: center;
+}
+
+.side-by-side svg {
+    max-width: 100%;
+    height: auto;
+}
+
 
 .table-container {
     width: 45%;
