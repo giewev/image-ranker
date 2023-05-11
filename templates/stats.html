@@ -2,9 +2,16 @@
 <html lang="en">
     <head>
         <!-- Include Chart.js -->
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     </head>
     <body>
+        <div class="navbar">
+            <a href="{{ url_for('index') }}">Voting</a>
+            <a href="{{ url_for('top') }}">Mega Milfs</a>
+            <a href="{{ url_for('stats') }}">Stats</a>
+            <a href="{{ url_for('invalid') }}">Removed Cards</a>
+        </div>
         <!-- Create a canvas element where the chart will be rendered -->
         <canvas id="gamesPlayedChart"></canvas>
         <canvas id="eloRatingsChart"></canvas>

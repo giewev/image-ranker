@@ -1,25 +1,23 @@
 <!doctype html>
 <html lang="en">
     <head>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
         <style>
-            .gallery {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(calc(22%), 1fr));
-                gap: 10px;
-            }
-
-            .card img {
-                width: 100%;
-                height: auto;
-            }
+            
         </style>
     </head>
     <body>
+        <div class="navbar">
+            <a href="{{ url_for('index') }}">Voting</a>
+            <a href="{{ url_for('top') }}">Mega Milfs</a>
+            <a href="{{ url_for('stats') }}">Stats</a>
+            <a href="{{ url_for('invalid') }}">Removed Cards</a>
+        </div>
     {% block content %}
     <h1>The Menagerie of Mega Mommy Milfs</h1>
     <div class="gallery">
         {% for card in cards %}
-        <div class="card">
+        <div class="topcard">
             <img src="{{ card.art_url }}" alt="{{ card.name }}">
             <p>{{ card.name }}</p>
             <p>Elo rating: {{ card.elo }}</p>
