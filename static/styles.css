@@ -55,3 +55,38 @@
     width: 100%;
     height: auto;
 }
+
+/* Styles for the stats tables */
+.stats-tables {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+.table-container {
+    width: 45%;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+th, td {
+    padding: 12px;
+}
+
+th {
+    background-color: #4CAF50;
+    color: white;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}

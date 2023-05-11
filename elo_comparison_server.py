@@ -19,7 +19,7 @@ def get_random_cards(randomness=100):
         LIMIT 1'''
         , (randomness,))
     row = c.fetchone() 
-    first_card = {'id': row[0], 'name': row[1], 'art_url': row[2], 'elo':row[3], 'games_played':row[4]}
+    first_card = {'id': row[0], 'name': row[1], 'art_url': row[2], 'elo':round(row[3], 1), 'games_played':row[4]}
 
     c.execute('''
         SELECT id, name, art_url, elo, games_played 
@@ -31,7 +31,7 @@ def get_random_cards(randomness=100):
         LIMIT 1'''
     , (first_card['id'], first_card['elo'], randomness))
     row = c.fetchone() 
-    second_card = {'id': row[0], 'name': row[1], 'art_url': row[2], 'elo':row[3], 'games_played':row[4]}
+    second_card = {'id': row[0], 'name': row[1], 'art_url': row[2], 'elo':round(row[3], 1), 'games_played':row[4]}
     conn.close()
     return [first_card, second_card]
 
@@ -144,10 +144,18 @@ def stats():
     games_played_data = [row[1] for row in games_played_data]
 
     # Query for elo rating distribution
-    c.execute('SELECT elo, COUNT(*) FROM cards GROUP BY elo')
+    c.execute('SELECT ROUND(elo / 50) * 50 AS elo_bucket, COUNT(*) FROM cards GROUP BY elo_bucket')
     elo_data = c.fetchall()
     elo_labels = [str(row[0]) for row in elo_data]
     elo_data = [row[1] for row in elo_data]
+
+    # get the artists with the most valid cards
+    c.execute('SELECT artist, COUNT(*) AS num_cards FROM cards WHERE invalid=0 GROUP BY artist ORDER BY num_cards DESC LIMIT 10')
+    top_artists_by_cards = c.fetchall()
+
+    # get the artists with the highest average elo for their valid images
+    c.execute('SELECT artist, AVG(elo) AS avg_elo FROM cards WHERE invalid=0 GROUP BY artist having count(*) >= 5 ORDER BY avg_elo DESC LIMIT 10')
+    top_artists_by_elo = c.fetchall()
 
     conn.close()
 
@@ -155,7 +163,9 @@ def stats():
                            games_played_labels=games_played_labels, 
                            games_played_data=games_played_data,
                            elo_labels=elo_labels,
-                           elo_data=elo_data)
+                           elo_data=elo_data,
+                           top_artists_by_cards=top_artists_by_cards, 
+                           top_artists_by_elo=top_artists_by_elo)
 
 
 if __name__ == '__main__':

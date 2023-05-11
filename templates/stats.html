@@ -12,6 +12,39 @@
             <a href="{{ url_for('stats') }}">Stats</a>
             <a href="{{ url_for('invalid') }}">Removed Cards</a>
         </div>
+        <div class="stats-tables">
+            <div class="table-container">
+                <h2>Artists with the Most Cards</h2>
+                <table>
+                    <tr>
+                        <th>Artist</th>
+                        <th>Number of Cards</th>
+                    </tr>
+                    {% for artist, num_cards in top_artists_by_cards %}
+                    <tr>
+                        <td>{{ artist }}</td>
+                        <td>{{ num_cards }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <div class="table-container">
+                <h2>Artists with the Highest Average Elo</h2>
+                <table>
+                    <tr>
+                        <th>Artist</th>
+                        <th>Average Elo</th>
+                    </tr>
+                    {% for artist, avg_elo in top_artists_by_elo %}
+                    <tr>
+                        <td>{{ artist }}</td>
+                        <td>{{ avg_elo }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+
         <!-- Create a canvas element where the chart will be rendered -->
         <canvas id="gamesPlayedChart"></canvas>
         <canvas id="eloRatingsChart"></canvas>
