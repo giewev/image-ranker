@@ -31,7 +31,7 @@ def get_card_info(scryfall_id):
     artist = card_data.get('artist')
     colors = ','.join(card_data.get('colors', []))
     cmc = card_data.get('cmc')
-    types = ','.join(card_data.get('type_line').split(' — '))
+    types = ','.join(card_data.get('type_line').split(' - '))
     mtg_set = card_data.get('mtg_set')
 
     return artist, colors, cmc, types, mtg_set
