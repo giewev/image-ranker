@@ -57,7 +57,7 @@
 }
 
 /* Styles for the stats tables */
-.stats-tables {
+.side-by-side {
     display: flex;
     justify-content: space-around;
     margin-bottom: 20px;

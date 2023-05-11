@@ -12,7 +12,7 @@
             <a href="{{ url_for('stats') }}">Stats</a>
             <a href="{{ url_for('invalid') }}">Removed Cards</a>
         </div>
-        <div class="stats-tables">
+        <div class="side-by-side">
             <div class="table-container">
                 <h2>Artists with the Most Potential Milfs</h2>
                 <table>
@@ -46,9 +46,11 @@
         </div>
 
         <!-- Create a canvas element where the chart will be rendered -->
-        <canvas id="gamesPlayedChart"></canvas>
-        <canvas id="eloRatingsChart"></canvas>
-
+        <div class="side-by-side">
+            <canvas id="gamesPlayedChart"></canvas>
+            <canvas id="eloRatingsChart"></canvas>
+        </div>
+        
         <script>
             // Get the context of the canvas element
             var ctx1 = document.getElementById('gamesPlayedChart').getContext('2d');
