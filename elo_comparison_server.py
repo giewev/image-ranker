@@ -25,7 +25,7 @@ def get_random_cards(randomness=1):
         FROM cards 
         WHERE invalid=0 
         AND elo > %s
-        ORDER BY (random()*%s) + (1/(games_played + 0.01))/5) desc
+        ORDER BY (random()*%s) + (1/(games_played + 0.01))/5 desc
         LIMIT 1'''
         , (elo_lower_bound, randomness,))
     row = c.fetchone() 
