@@ -11,13 +11,15 @@ app = Flask(__name__)
 def get_random_cards(randomness=100):
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
+    elo_lower_bound = random.choice([0, 1100, 1200])
     c.execute('''
         SELECT id, name, art_url, elo, games_played 
         FROM cards 
         WHERE invalid=0 
+        AND elo > ?
         ORDER BY ((RANDOM() / CAST(-9223372036854775808 AS REAL)*?) + (1/(games_played + 0.01))/5) desc
         LIMIT 1'''
-        , (randomness,))
+        , (elo_lower_bound, randomness,))
     row = c.fetchone() 
     first_card = {'id': row[0], 'name': row[1], 'art_url': row[2], 'elo':round(row[3], 1), 'games_played':row[4]}
 
