@@ -77,6 +77,11 @@ def update_elo(winner_id, loser_id, k=64, report=False):
             WHERE id=%s
         ''', (winner_new_elo, winner_id))
 
+        c.execute(
+        "INSERT INTO votes (user_id, winner_id, loser_id) VALUES (%s, %s, %s)",
+        (None, winner_id, loser_id)
+        )
+
     c.execute('''
         UPDATE cards
         SET elo=%s, games_played=games_played+1
