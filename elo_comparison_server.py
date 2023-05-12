@@ -1,23 +1,31 @@
 import os
 import random
-import sqlite3
+import psycopg2
+import json
 from flask import Flask, render_template, request, redirect, url_for
 
-DB_PATH = 'mtg_card_art.db'
+def get_db_connection():
+    db_creds = json.load(open('./db_creds.json'))
+    return psycopg2.connect(
+        host=db_creds['host'],
+        dbname=db_creds['name'],
+        user=db_creds['user'],
+        password=db_creds['pass'],
+        port=db_creds['port']
+    )
 
 app = Flask(__name__)
 
-
-def get_random_cards(randomness=100):
-    conn = sqlite3.connect(DB_PATH)
+def get_random_cards(randomness=1):
+    conn = get_db_connection()
     c = conn.cursor()
     elo_lower_bound = random.choice([0, 1100, 1200])
     c.execute('''
         SELECT id, name, art_url, elo, games_played 
         FROM cards 
         WHERE invalid=0 
-        AND elo > ?
-        ORDER BY ((RANDOM() / CAST(-9223372036854775808 AS REAL)*?) + (1/(games_played + 0.01))/5) desc
+        AND elo > %s
+        ORDER BY (random()*%s) + (1/(games_played + 0.01))/5) desc
         LIMIT 1'''
         , (elo_lower_bound, randomness,))
     row = c.fetchone() 
@@ -31,30 +39,29 @@ def get_random_cards(randomness=100):
             FROM cards 
             WHERE 1=1
                 AND invalid=0 
-                AND id != ?
-                AND abs(elo - ?) < ?
-            ORDER BY (RANDOM() / CAST(-9223372036854775808 AS REAL)) desc
+                AND id != %s
+                AND abs(elo - %s) < %s
+            ORDER BY (RANDOM()) desc
             LIMIT 1'''
         , (first_card['id'], first_card['elo'], max_elo_distance))
         row = c.fetchone() 
         max_elo_distance += 50
-
 
     second_card = {'id': row[0], 'name': row[1], 'art_url': row[2], 'elo':round(row[3], 1), 'games_played':row[4]}
     conn.close()
     return [first_card, second_card]
 
 def update_elo(winner_id, loser_id, k=64, report=False):
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     c = conn.cursor()
 
     if report:
         k *= 2
         winner_id, loser_id = loser_id, winner_id
 
-    c.execute('SELECT elo FROM cards WHERE id=?', (winner_id,))
+    c.execute('SELECT elo FROM cards WHERE id=%s', (winner_id,))
     winner_elo = c.fetchone()[0]
-    c.execute('SELECT elo FROM cards WHERE id=?', (loser_id,))
+    c.execute('SELECT elo FROM cards WHERE id=%s', (loser_id,))
     loser_elo = c.fetchone()[0]
 
     expected_outcome_winner = 1 / (1 + 10 ** ((loser_elo - winner_elo) / 400))
@@ -66,14 +73,14 @@ def update_elo(winner_id, loser_id, k=64, report=False):
     if not report:
         c.execute('''
             UPDATE cards
-            SET elo=?, games_played=games_played+1, wins=wins+1
-            WHERE id=?
+            SET elo=%s, games_played=games_played+1, wins=wins+1
+            WHERE id=%s
         ''', (winner_new_elo, winner_id))
 
     c.execute('''
         UPDATE cards
-        SET elo=?, games_played=games_played+1
-        WHERE id=?
+        SET elo=%s, games_played=games_played+1
+        WHERE id=%s
     ''', (loser_new_elo, loser_id))
 
     conn.commit()
@@ -96,7 +103,7 @@ def index():
 @app.route('/low_rank/<int:page>', methods=['GET'])
 def low_rank(page=1):
     images_per_page = 12
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     c = conn.cursor()
     c.execute('SELECT COUNT(*) FROM cards')
     total_images = c.fetchone()[0]
@@ -107,7 +114,7 @@ def low_rank(page=1):
         FROM cards
         WHERE invalid=0 
         ORDER BY elo ASC
-        LIMIT ? OFFSET ?
+        LIMIT %s OFFSET %s
     ''', (images_per_page, (page - 1) * images_per_page))
     cards = [{'id': row[0], 'name': row[1], 'art_url': row[2], 'elo': row[3], 'games_played': row[4]} for row in c.fetchall()]
 
@@ -116,16 +123,16 @@ def low_rank(page=1):
 
 @app.route('/flag/<string:image_id>', methods=['POST'])
 def flag(image_id):
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     c = conn.cursor()
-    c.execute('UPDATE cards SET invalid=1 WHERE id=?', (image_id,))
+    c.execute('UPDATE cards SET invalid=1 WHERE id=%s', (image_id,))
     conn.commit()
     conn.close()
     return redirect(request.referrer)
 
 @app.route('/invalid', methods=['GET'])
 def invalid():
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     c = conn.cursor()
     c.execute('SELECT id, name, art_url, elo, games_played FROM cards WHERE invalid=1')
     cards = [{'id': row[0], 'name': row[1], 'art_url': row[2], 'elo':row[3], 'games_played':row[4]} for row in c.fetchall()]
@@ -134,7 +141,7 @@ def invalid():
 
 @app.route('/top', methods=['GET'])
 def top():
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     c = conn.cursor()
     c.execute('SELECT id, name, art_url, elo FROM cards WHERE invalid=0 ORDER BY elo DESC LIMIT 12')
     cards = [{'id': row[0], 'name': row[1], 'art_url': row[2], 'elo':row[3]} for row in c.fetchall()]
@@ -143,7 +150,7 @@ def top():
 
 @app.route('/stats', methods=['GET'])
 def stats():
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     c = conn.cursor()
 
     # Query for games played distribution
