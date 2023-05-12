@@ -134,7 +134,7 @@ def flag(image_id):
 def invalid():
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute('SELECT id, name, art_url, elo, games_played FROM cards WHERE invalid=1')
+    c.execute('SELECT id, name, art_url, elo, games_played FROM cards WHERE invalid=1 order by name asc')
     cards = [{'id': row[0], 'name': row[1], 'art_url': row[2], 'elo':row[3], 'games_played':row[4]} for row in c.fetchall()]
     conn.close()
     return render_template('./invalid.html', cards=cards)
@@ -154,13 +154,13 @@ def stats():
     c = conn.cursor()
 
     # Query for games played distribution
-    c.execute('SELECT games_played, COUNT(*) FROM cards where invalid = 0 GROUP BY games_played')
+    c.execute('SELECT games_played, COUNT(*) FROM cards where invalid = 0 GROUP BY games_played order by 1 asc')
     games_played_data = c.fetchall()
     games_played_labels = [str(row[0]) for row in games_played_data]
     games_played_data = [row[1] for row in games_played_data]
 
     # Query for elo rating distribution
-    c.execute('SELECT ROUND(elo / 50) * 50 AS elo_bucket, COUNT(*) FROM cards where invalid = 0 GROUP BY elo_bucket')
+    c.execute('SELECT ROUND(elo / 50) * 50 AS elo_bucket, COUNT(*) FROM cards where invalid = 0 GROUP BY elo_bucket order by 1 asc')
     elo_data = c.fetchall()
     elo_labels = [str(row[0]) for row in elo_data]
     elo_data = [row[1] for row in elo_data]
