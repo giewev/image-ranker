@@ -1,8 +1,38 @@
-import os
 import random
 import psycopg2
 import json
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
+from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
+from werkzeug.security import generate_password_hash, check_password_hash
+
+app = Flask(__name__)
+login = LoginManager(app)
+login.login_view = 'login'
+
+class User(UserMixin):
+    def __init__(self, user_data):
+        self.id = user_data['id']
+        self.username = user_data['username']
+        self.password_hash = user_data['password_hash']
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+def get_user_by_id(id):
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('select username, password_hash from users where user_id = %s', (id,))
+    row = c.fetchone()
+    if row is None:
+        return row 
+    user_data = {'id':id, 'username':row[0], 'password_hash':row[1]}
+    return user_data
+
+@login.user_loader
+def load_user(id):
+    # Use psycopg2 to get the user by id from your database
+    user_data = get_user_by_id(id)  # You need to implement this function
+    return User(user_data) if user_data else None
 
 def get_db_connection():
     db_creds = json.load(open('./db_creds.json'))
@@ -13,8 +43,6 @@ def get_db_connection():
         password=db_creds['pass'],
         port=db_creds['port']
     )
-
-app = Flask(__name__)
 
 def get_random_cards(randomness=1):
     conn = get_db_connection()
@@ -104,6 +132,65 @@ def index():
     cards = get_random_cards()
     return render_template('./index.html', cards=cards)
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        # Check if the username already exists
+        cur.execute('SELECT * FROM users WHERE username = %s', (username,))
+        if cur.fetchone() is not None:
+            flash('Please use a different username')
+            return redirect(url_for('register'))
+
+        password_hash = generate_password_hash(password)
+
+        # Insert the new user data into the database
+        cur.execute('INSERT INTO users (username, password_hash) VALUES (%s, %s)',
+                    (username, password_hash))
+
+        conn.commit()
+        cur.close()
+        conn.close()
+        return redirect(url_for('login'))
+
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        # Check if the username exists and get their password hash
+        cur.execute('SELECT * FROM users WHERE username = %s', (username,))
+        user_data = cur.fetchone()
+
+        cur.close()
+        conn.close()
+
+        if user_data is None or not check_password_hash(user_data[2], password):
+            flash('Invalid username or password')
+            return redirect(url_for('login'))
+
+        user = User(user_data)
+        login_user(user)
+
+        return redirect(url_for('index'))
+
+    return render_template('login.html')
+
 @app.route('/low_rank/', methods=['GET'])
 @app.route('/low_rank/<int:page>', methods=['GET'])
 def low_rank(page=1):
@@ -118,7 +205,7 @@ def low_rank(page=1):
         SELECT id, name, art_url, elo, games_played 
         FROM cards
         WHERE invalid=0 
-        ORDER BY elo ASC
+        ORDER BY elo ASC, name ASC
         LIMIT %s OFFSET %s
     ''', (images_per_page, (page - 1) * images_per_page))
     cards = [{'id': row[0], 'name': row[1], 'art_url': row[2], 'elo': row[3], 'games_played': row[4]} for row in c.fetchall()]
